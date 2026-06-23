@@ -85,19 +85,19 @@ void PacketParser::parse_Ipv4(const u_char *packet, int packet_len){
     }
 
     unsigned char byte1 = packet[0];
-    unsigned char version = (byte1 >> 4) && 0x0F;
-    unsigned char ihl = byte1 && 0x0F;
+    unsigned char version = (byte1 >> 4) & 0x0F;
+    unsigned char ihl = byte1 & 0x0F;
 
     int header_len = ihl*4;
 
     unsigned char byte2 = packet[1];
-    unsigned char dscp = (byte2 >> 2) && 0xFF;
-    unsigned char ecn = byte2 && 0x03;
+    unsigned char dscp = (byte2 >> 2) & 0x3F;
+    unsigned char ecn = byte2 & 0x03;
     
     uint16_t total_length = ntohs(*(uint16_t *)(packet+2));
     uint16_t id = ntohs(*(uint16_t *)(packet+4));
-    unsigned char flags = (packet[5] >> 5)&&0x07;
-    uint16_t frameoffset = ntohs(*(uint16_t *)(packet+6)) && 0x1FFF;
+    unsigned char flags = (packet[6] >> 5) & 0x07;
+    uint16_t frameoffset = ntohs(*(uint16_t *)(packet+6)) & 0x1FFF;
     
     unsigned char ttl = packet[8];
     unsigned char protocol = packet[9];
@@ -114,10 +114,10 @@ void PacketParser::parse_Ipv4(const u_char *packet, int packet_len){
             parse_Icmp(payload,payload_length);
             break;
         case 6 : 
-            // parse_Tcp(packet,packet_len);
+            parse_Tcp(payload,payload_length);
             break;
         case 17 : 
-            // parse_Udp(packet,packet_len);
+            parse_Udp(payload,payload_length);
             break;
         case 121 :
             // parse_Smp(packet,packet_len);
@@ -204,4 +204,49 @@ void PacketParser::parse_Icmp(const u_char *payload, int payload_len) {
 
     printf("\033[1;33mICMP Type: %d, Code : %d, Checksum: 0x%04x, ID: %d, Sequence: %d\033[0m\n", type, code, checksum, id, sequence);
 
+}
+
+/**
+ * Parses the TCP header for src and dst ports, sequence numbers, and other relevant information.
+ */
+ void PacketParser::parse_Tcp(const u_char *packet, int packet_len){
+    // Implementation for TCP header parsing
+    uint16_t src_port = ntohs(*(uint16_t *)(packet+0));
+    uint16_t dst_port = ntohs(*(uint16_t *)(packet+2));
+    uint32_t sequence_num = ntohs(*(uint32_t *)(packet+4));
+    uint32_t ack_num = ntohs(*(uint32_t *)(packet+8));
+    uint8_t data_offset = ((packet[12] >> 4)& 0x0F)*4;
+    uint8_t flags = packet[13];
+    uint16_t window_size = ntohs(*(uint16_t *)(packet+14));
+    uint16_t checksum = ntohs(*(uint16_t *)(packet+16));
+    uint16_t urgent_pointer = ntohs(*(uint16_t *)(packet+18));
+
+    printf("\033[1;33mTCP Src Port: %d, Dst Port: %d, Sequence Number: %u, Ack Number: %u, Data Offset: %d, Flags: 0x%02x, Window Size: %d, Checksum: 0x%04x, Urgent Pointer: %d\033[0m\n", src_port, dst_port, sequence_num, ack_num, data_offset, flags, window_size, checksum, urgent_pointer);
+    printf("\033[1;33mTCP Payload:\033[0m\n");
+    for(int i = data_offset; i < packet_len; i++){
+        printf("%02x ", packet[i]);
+    }
+    printf("\n");
+}
+
+/**
+ * Parses the UDP header for source and destination ports and payload size.
+ */
+void PacketParser::parse_Udp(const u_char *packet, int packet_len) {
+    if (packet_len < 8) {
+        printf("Packet too small for UDP header\n");
+        return;
+    }
+
+    uint16_t src_port = ntohs(*(uint16_t *)(packet));
+    uint16_t dst_port = ntohs(*(uint16_t *)(packet + 2));
+    uint16_t length = ntohs(*(uint16_t *)(packet + 4));
+    uint16_t checksum = ntohs(*(uint16_t *)(packet + 6));
+
+    printf("\033[1;33mUDP Src Port: %d, Dst Port: %d, Length: %d, Checksum: 0x%04x\033[0m\n", src_port, dst_port, length, checksum);
+    printf("\033[1;33mUDP Payload:\033[0m\n");
+    for(int i = 8; i < packet_len; i++){
+        printf("%02x ", packet[i]);
+    }
+    printf("\n");
 }
