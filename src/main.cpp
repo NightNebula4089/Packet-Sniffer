@@ -5,7 +5,7 @@
 #include <string.h>
 #include "packet_parsing.h"
 #include "core/packet/Packet_factory.h"
-#include "core/packet/CapturedPacket.h"
+#include "core/packet/capturedPacket.h"
 #include "core/protocols.h"
 
 using namespace std;
