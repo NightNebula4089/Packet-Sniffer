@@ -10,7 +10,8 @@ class Ipv4Packet : public Packet {
         ~Ipv4Packet();
         std::uint16_t getProtocol() const override;
         void printInfo() const override;
-        unsigned char getProtocol() const;
+        ProtoSpace getProtoSpace() const override;
+        PayloadInfo getPayload() const override;
     private :
         unsigned char version;
         int ipv4_payload_length;
@@ -29,7 +30,7 @@ class Ipv4Packet : public Packet {
         uint32_t dst_ip;
 
         PayloadInfo payload_info; // Struct to hold payload information
-}
+};
 
 
 #endif 

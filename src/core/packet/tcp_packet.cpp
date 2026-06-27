@@ -4,12 +4,12 @@
 #include <arpa/inet.h>
 
 TcpPacket::TcpPacket(const PayloadInfo& payload_info) : Packet(payload_info) {
-    if (payload_info.len < 20) {
+    if (payload_info.payload_len < 20) {
         std::cerr << "Packet too small for TCP header" << std::endl;
         return;
     }
 
-    const u_char* packet = payload_info.data;
+    const u_char* packet = payload_info.payload;
 
     this->src_port = ntohs(*(uint16_t *)(packet+0));
     this->dst_port = ntohs(*(uint16_t *)(packet+2));
@@ -33,8 +33,19 @@ std::uint16_t TcpPacket::getProtocol() const {
 void TcpPacket::printInfo() const {
     printf("\033[1;33mTCP Src Port: %d, Dst Port: %d, Sequence Number: %u, Ack Number: %u, Data Offset: %d, Flags: 0x%02x, Window Size: %d, Checksum: 0x%04x, Urgent Pointer: %d\033[0m\n", src_port, dst_port, sequence_num, ack_num, data_offset, flags, window_size, checksum, urgent_pointer);
     printf("\033[1;33mTCP Payload:\033[0m\n");
-    for(int i = data_offset; i < payload_info.len; i++){
-        printf("%02x ", payload_info.data[i]);
+    for(int i = data_offset; i < payload_info.payload_len; i++){
+        printf("%02x ", payload_info.payload[i]);
     }
     printf("\n");
+}
+
+ProtoSpace TcpPacket::getProtoSpace() const {
+    return ProtoSpace::IpProto;
+}
+
+PayloadInfo TcpPacket::getPayload() const {
+    PayloadInfo payload_info;
+    payload_info.payload = this->payload_info.payload + data_offset;
+    payload_info.payload_len = this->payload_info.payload_len - data_offset;
+    return payload_info;
 }

@@ -64,3 +64,11 @@ void Ipv4Packet::printInfo() const {
     std::cout << "\033[1;31m Source IP :  " << std  ::dec << ((src_ip_ >> 24) & 0xFF) << "." << ((src_ip_ >> 16) & 0xFF) << "." << ((src_ip_ >> 8) & 0xFF) << "." << (src_ip_ & 0xFF) << "\033[0m\n" << std::endl;
     std::cout << "\033[1;31m Destination IP :  " << std  ::dec << ((dst_ip_ >> 24) & 0xFF) << "." << ((dst_ip_ >> 16) & 0xFF) << "." << ((dst_ip_ >> 8) & 0xFF) << "." << (dst_ip_ & 0xFF) << "\033[0m\n" << std::endl;
 }
+
+ProtoSpace Ipv4Packet::getProtoSpace() const {
+    return ProtoSpace::IpProto;
+}
+
+PayloadInfo Ipv4Packet::getPayload() const {
+    return payload_;
+}

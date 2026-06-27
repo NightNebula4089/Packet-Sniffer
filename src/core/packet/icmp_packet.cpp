@@ -29,3 +29,14 @@ std::uint16_t IcmpPacket::getProtocol() const {
 void IcmpPacket::printInfo() const {
     printf("\033[1;33mICMP Type: %d, Code : %d, Checksum: 0x%04x, ID: %d, Sequence: %d\033[0m\n", type, code, checksum, id, sequence);
 }
+
+ProtoSpace IcmpPacket::getProtoSpace() const {
+    return ProtoSpace::IpProto;
+}
+
+PayloadInfo IcmpPacket::getPayload() const {
+    PayloadInfo payload_info;
+    payload_info.data = this->payload_info.data + 8; // ICMP header is 8 bytes
+    payload_info.len = this->payload_info.len - 8;
+    return payload_info;
+}

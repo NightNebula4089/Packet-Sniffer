@@ -5,15 +5,21 @@
 #include <string.h>
 #include "packet_parsing.h"
 #include "core/packet/Packet_factory.h"
-#include "core/packet/capturedPacket.h"
-#include "core/protocols.h"
+#include "core/packet/captured_packet.h"
+#include "core/protocols.cpp"
+#include "core/capture/capture.cpp"
 
 using namespace std;
 
 
 void packet_callback(u_char *userinput, const struct pcap_pkthdr *header,const u_char *packet){
-    PacketParser *parser = (PacketParser *)userinput;
-    parser->packet_parser(header, packet);
+    CapturedPacket captured_packet = parsePacket(header, packet);
+
+    cout << "\033[1;34mTimestamp: " << captured_packet.timestamp.tv_sec << "." << captured_packet.timestamp.tv_usec << "\033[0m" << endl;
+    for(auto& layer : captured_packet.layers){
+        layer->printInfo();
+    }
+    cout << "END OF PACKET \n" << endl;
 }
 
 
@@ -42,6 +48,8 @@ int main(int argc, char* argv[]){
                 exit(EXIT_FAILURE);
         }
     }
+
+    registerAllProtocols();
 
     // TODO : Start a live Packet Capture session on the device and capture count packets.
     pcap_init(PCAP_CHAR_ENC_UTF_8, errbuf);

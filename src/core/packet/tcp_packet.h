@@ -11,6 +11,8 @@ class TcpPacket : public Packet {
 
         std::uint16_t getProtocol() const override;
         void printInfo() const override;
+        ProtoSpace getProtoSpace() const override;
+        PayloadInfo getPayload() const override;
 
     private :
         uint16_t src_port;
@@ -22,6 +24,6 @@ class TcpPacket : public Packet {
         uint16_t window_size;
         uint16_t checksum;
         uint16_t urgent_pointer;
-}
+};
 
 #endif 

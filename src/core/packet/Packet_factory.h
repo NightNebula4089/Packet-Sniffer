@@ -12,30 +12,44 @@
 #include <unordered_map>
 #include <functional>
 
-using LayerFactory = std::functional<std::unique_ptr<Packet>(PayloadInfo)>;
+
+struct ProtoKey{
+    ProtoSpace space;
+    uint32_t key;
+
+    bool operator==(const ProtoKey& other) const {
+        return space == other.space && key == other.key;
+    }
+};
+
+struct ProtoKeyHash{
+    std::size_t operator()(const ProtoKey& k) const {
+        return std::hash<uint8_t>()(static_cast<uint8_t>(k.space)<< 16  | k.key );
+    }
+};
+
+using LayerFactory = std::function<std::unique_ptr<Packet>(PayloadInfo)>;
 
 class PacketFactory{
     public :
         static PacketFactory& instance();
-        void registerEtherType(uint16_t type, LayerFactory factory);
-        void registerIpProto(uint8_t proto, LayerFactory factory);
-        std::unique_ptr<Packet> makeFromEtherType(uint16_t type, PayloadView view) const;
-        std::unique_ptr<Packet> makeFromIpProto(uint8_t proto, PayloadView view) const;
+        void registerProto(ProtoKey key ,LayerFactory factory);
+        
+        std::unique_ptr<Packet> makeFromProto(ProtoKey key, PayloadInfo payload) const {
+            auto it = registry_.find(key);
+            if(it != registry_.end()){
+                return it->second(payload);
+            } else {
+                return nullptr;
+            }
+        }
 
     private :
         PacketFactory() = default;
         ~PacketFactory() = default;
 
-        template<typename Key>
-        std::unique_ptr<Packet> make(const std::unordered_map<Key, LayerFactory>& factory_map, Key key, PayloadInfo payload_info) const {
-            auto it = factory_map.find(key);
-            if (it != factory_map.end()) {
-                return it->second(payload_info);
-            }
-            return nullptr; // or throw an exception
-        }
-
-        std::unordered_map<std::uint8_t, LayerFactory> ip_factory;
-        std::unordered_map<std::uint16_t, LayerFactory> ether_factory;
+        std::unordered_map<ProtoKey, LayerFactory, ProtoKeyHash> registry_;
 
 };
+
+#endif

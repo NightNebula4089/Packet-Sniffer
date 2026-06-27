@@ -12,6 +12,8 @@ class IcmpPacket : public Packet {
 
         std::uint16_t getProtocol() const override;
         void printInfo() const override;
+        ProtoSpace getProtoSpace() const override;
+        PayloadInfo getPayload() const override;
 
     private :
         unsigned char type;
@@ -19,6 +21,6 @@ class IcmpPacket : public Packet {
         uint16_t checksum;
         uint16_t id;
         uint16_t sequence;
-}
+};
 
 #endif 
