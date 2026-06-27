@@ -22,7 +22,7 @@ class Ipv4Packet : public Packet {
         uint16_t total_length;
         uint16_t id;
         unsigned char flags;
-        uint16_t frameoffset;
+        uint16_t frame_offset;
         unsigned char ttl;
         unsigned char protocol;
         uint16_t checksum;

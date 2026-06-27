@@ -33,7 +33,7 @@ std::uint16_t TcpPacket::getProtocol() const {
 void TcpPacket::printInfo() const {
     printf("\033[1;33mTCP Src Port: %d, Dst Port: %d, Sequence Number: %u, Ack Number: %u, Data Offset: %d, Flags: 0x%02x, Window Size: %d, Checksum: 0x%04x, Urgent Pointer: %d\033[0m\n", src_port, dst_port, sequence_num, ack_num, data_offset, flags, window_size, checksum, urgent_pointer);
     printf("\033[1;33mTCP Payload:\033[0m\n");
-    for(int i = data_offset; i < payload_info.payload_len; i++){
+    for(size_t i = data_offset; i < payload_info.payload_len; i++){
         printf("%02x ", payload_info.payload[i]);
     }
     printf("\n");
