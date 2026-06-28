@@ -33,7 +33,7 @@ void IcmpPacket::printInfo() const {
 }
 
 ProtoSpace IcmpPacket::getProtoSpace() const {
-    return ProtoSpace::IpProto;
+    return ProtoSpace::ApplicationProto;
 }
 
 PayloadInfo IcmpPacket::getPayload() const {

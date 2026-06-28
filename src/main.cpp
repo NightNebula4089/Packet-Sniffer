@@ -3,7 +3,6 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include "packet_parsing.h"
 #include "core/packet/Packet_factory.h"
 #include "core/packet/captured_packet.h"
 #include "core/packet/Packet.h"
@@ -35,7 +34,7 @@ int main(int argc, char* argv[]){
     int opt;
     char errbuf[PCAP_ERRBUF_SIZE];
     
-    while((opt = getopt(argc,argv,"hi:c::")) != -1){
+    while((opt = getopt(argc,argv,"hi:c:")) != -1){
         switch(opt) {
             case 'i' :
                 device = optarg;
@@ -97,14 +96,12 @@ int main(int argc, char* argv[]){
         return 1;
     }
 
-    PacketParser parser(device);
-
     if (count <= 0) count = -1;  // -1 = infinite
 
     cout << "Capturing packets on " << device << " (count=" << count << ")..." << endl;
     cout << "Press Ctrl+C to stop" << endl;
 
-    pcap_loop(handle, count, packet_callback, (u_char*)&parser);
+    pcap_loop(handle, count, packet_callback, nullptr);
 
     cout << "Capture finished" << endl;
     pcap_close(handle);
