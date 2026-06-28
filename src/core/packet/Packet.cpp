@@ -12,10 +12,10 @@ Packet::~Packet() {
 }
 
 const u_char* Packet::get_data() const {
-    return data;
+    return payload_info.payload;
 }
 
-const size_t Packet::getSize() const {
-    return size;
+size_t Packet::getSize() const {
+    return payload_info.payload_len;
 }
 

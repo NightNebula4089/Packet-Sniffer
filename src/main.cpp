@@ -6,11 +6,14 @@
 #include "packet_parsing.h"
 #include "core/packet/Packet_factory.h"
 #include "core/packet/captured_packet.h"
-#include "core/protocols.cpp"
-#include "core/capture/capture.cpp"
+#include "core/packet/Packet.h"
 
 using namespace std;
 
+
+// forward declarations instead of includes for .cpp files
+void registerAllProtocols();
+CapturedPacket parsePacket(const struct pcap_pkthdr* header, const u_char* raw);
 
 void packet_callback(u_char *userinput, const struct pcap_pkthdr *header,const u_char *packet){
     CapturedPacket captured_packet = parsePacket(header, packet);

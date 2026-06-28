@@ -21,6 +21,8 @@ class Ipv6Packet : public Packet {
         unsigned char hop_limit;
         uint32_t src_ip[4];
         uint32_t dst_ip[4];
+        size_t ipv6_payload_offset;
+        size_t ipv6_payload_length;
 };
 
 #endif // IPV6_PACKET_H
