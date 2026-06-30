@@ -12,6 +12,8 @@ using namespace std;
 
 // forward declarations instead of includes for .cpp files
 void registerAllProtocols();
+int start_live_capture(string& device, int count, void (*packet_callback)(u_char *, const struct pcap_pkthdr *, const u_char *));
+int start_file_capture(const std::string& filename, int count, void (*packet_callback)(u_char *, const struct pcap_pkthdr *, const u_char *));
 CapturedPacket parsePacket(const struct pcap_pkthdr* header, const u_char* raw);
 
 void packet_callback(u_char *userinput, const struct pcap_pkthdr *header,const u_char *packet){
@@ -31,10 +33,13 @@ int main(int argc, char* argv[]){
 
     string device;
     int count = -1;
+    int read_file = 0;
+    string r_file;
+    string w_file;
+    int write_file = 0;
     int opt;
-    char errbuf[PCAP_ERRBUF_SIZE];
     
-    while((opt = getopt(argc,argv,"hi:c:")) != -1){
+    while((opt = getopt(argc,argv,"hi:c:r:w:")) != -1){
         switch(opt) {
             case 'i' :
                 device = optarg;
@@ -42,71 +47,31 @@ int main(int argc, char* argv[]){
             case 'c' :
                 count = atoi(optarg);
                 break;
+            case 'r' :
+                // Handle read file option
+                read_file = 1;
+                r_file = optarg;
+                break;
+            case 'w' :
+                // Handle write file option
+                write_file = 1;
+                w_file = optarg;
+                break;
             case 'h':
-                cout << "Usage" << argv[0] << " i [interface] c [count]" << endl;
+                cout << "Usage" << argv[0] << " i [interface] c [count] r [read_file] w [write_file]" << endl;
                 return 0;
             default : 
-                cout << "Usage" << argv[0] << " i [interface] c [count]" << endl;
+                cout << "Usage" << argv[0] << " i [interface] c [count] r [read_file] w [write_file]" << endl;
                 exit(EXIT_FAILURE);
         }
     }
 
     registerAllProtocols();
 
-    // TODO : Start a live Packet Capture session on the device and capture count packets.
-    pcap_init(PCAP_CHAR_ENC_UTF_8, errbuf);
-
-    if(device.empty()){
-        cout << "No device specified, choosing default device" <<endl;
-        pcap_if_t *alldevs = nullptr;
-        if (pcap_findalldevs(&alldevs, errbuf) == -1) {
-            cerr << "Error finding devices: " << errbuf << endl;
-            exit(EXIT_FAILURE);
-        }
-
-        if (alldevs == nullptr || alldevs->name == nullptr) {
-            cerr << "No capture device available" << endl;
-            if (alldevs != nullptr) {
-                pcap_freealldevs(alldevs);
-            }
-            exit(EXIT_FAILURE);
-        }
-
-        device = alldevs->name;
-        pcap_freealldevs(alldevs);
-
-        if(device.empty()){
-            cerr << "Error finding default device: " << errbuf << endl;
-            exit(EXIT_FAILURE);
-        }
+    if(read_file == 1){
+        return start_file_capture(r_file, count, packet_callback);
+    } else {
+        return start_live_capture(device, count, packet_callback);
     }
-
-    pcap_t *handle = pcap_create(device.c_str(),errbuf);
-    if((handle) == nullptr){
-        cerr << "Error creating pcap handle: " << errbuf << endl;
-        exit(EXIT_FAILURE);
-    };
-    pcap_set_promisc(handle,1);
-    pcap_set_timeout(handle,1000);
-    pcap_set_snaplen(handle,65535);
-
-    if(pcap_activate(handle)!= 0){
-        cout << "Error activating pcap handle:" << pcap_geterr(handle) << endl;
-        pcap_close(handle);
-        return 1;
-    }
-
-    if (count <= 0) count = -1;  // -1 = infinite
-
-    cout << "Capturing packets on " << device << " (count=" << count << ")..." << endl;
-    cout << "Press Ctrl+C to stop" << endl;
-
-    pcap_loop(handle, count, packet_callback, nullptr);
-
-    cout << "Capture finished" << endl;
-    pcap_close(handle);
-
-
-    return 0;
 
 }
